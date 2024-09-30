@@ -1,0 +1,50 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: #282c34;
+}
+
+.title {
+    color: #fff;
+}
+
+.board-container {
+    display: grid;
+    grid-template-rows: repeat(5, 80px);
+    grid-template-columns: repeat(11, 80px);
+    gap: 5px;
+    background: #000;
+    padding: 5px;
+}
+
+.cell {
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.cell:hover {
+    background: #666;
+}
+
+.parts-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 5px;
+    background: #000;
+}
+
+.part {
+    display: grid;
+    gap: 2px;
+    border: 1px solid #fff;
+}
+
+.rotate-button {
+    cursor: pointer;
+    height: 20px;
+}
