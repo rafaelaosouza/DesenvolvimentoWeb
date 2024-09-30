@@ -1,141 +1,371 @@
-// **** Board ****
-const rows = 5;
-const cols = 11;
-const board = document.getElementById('board');
-createBoard(rows, cols);
+let piecesOnBoard = [];
+let selectedPiece = null;
 
 function createBoard(rows, cols) {
-    const cells = rows * cols;
-    
-    for (let i = 0; i < cells; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        board.appendChild(cell);
+    const board = document.getElementById('board');
+    board.innerHTML = ''; 
+    board.rows = rows;
+    board.cols = cols;
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.setAttribute('data-id', `${i}-${j}`);
+            cell.addEventListener('click', function() {
+                if (selectedPiece) {
+                    addPieceToCell(i, j);
+                } else if (cell.style.backgroundColor) {
+                    removePieceToCell(i, j);
+                    
+                }
+            });
+            board.appendChild(cell);
+        }
     }
 }
-// **** Fim Board ****
+
+function addPieceToCell(row, col) {
+    let shape = selectedPiece.shape;
+    shape = removeRowOrColEmpty(shape);
+    const canAdd = canAddPieceToCell(row, col, shape);
+    pieceShapeColLength = shape[0].length;
+    pieceShapeRowLength = shape.length;
+    let i2 = 0;
+    if (canAdd) {
+        const pieceCells = []; 
+        for (let i = row; (i < board.rows && i2 < pieceShapeRowLength); i++) {
+            let j2 = 0;
+            for (let j = col; (j < board.cols && j2 < pieceShapeColLength); j++) {
+                if (shape[i2][j2]) {
+                    const cell = document.querySelector(`[data-id="${i}-${j}"]`);
+                    if (cell) {
+                        cell.style.backgroundColor = selectedPiece.color;
+                        pieceCells.push([i, j]);
+                        const selectedPieceDiv = document.getElementById(selectedPiece.id);
+                        if (selectedPieceDiv) {
+                            selectedPieceDiv.remove();
+                        }
+
+                    }
+                }
+                j2++;
+            }
+            i2++;
+        }
+        piecesOnBoard.push({ pieceId: selectedPiece.id, cells: pieceCells });
+        selectedPiece = null;
+    }
+}
 
 
-// **** Peças ****
-const partsMap = [
+function removePieceToCell(row, col) {
+    let pieceToRemoveOnBoard = verifyIfPieceIsPresent(row, col);
+    cellsToRemove = pieceToRemoveOnBoard.cells;
+    if(cellsToRemove) { 
+        for(let i = 0; i < cellsToRemove.length; i++){
+            let cell = document.querySelector(`[data-id="${cellsToRemove[i][0]}-${cellsToRemove[i][1]}"]`);
+            if(cell.style.backgroundColor){
+                cell.style.backgroundColor = '';
+                let pieceIndex = piecesOnBoard.findIndex(piece => 
+                    piece.cells.some(([r, c]) => r === cellsToRemove[i][0] && c === cellsToRemove[i][1])
+                );
+                if (pieceIndex !== -1) {
+                    piecesOnBoard[pieceIndex].cells = piecesOnBoard[pieceIndex].cells.filter(([r, c]) => 
+                        !(r === cellsToRemove[i][0] && c === cellsToRemove[i][1])
+                    );
+                    if (piecesOnBoard[pieceIndex].cells.length === 0) {
+                        piecesOnBoard.splice(pieceIndex, 1);
+                    }
+                }
+            }
+        }
+        const selectedPieceDiv = document.getElementById(piecesOnBoard.id);
+        if (selectedPieceDiv) {
+            selectedPieceContainer.appendChild(selectedPieceDiv);
+        }
+        const index = piecesOnBoard.findIndex(piece => piece.pieceId === pieceToRemoveOnBoard.pieceId);
+        if (index !== -1) {l
+            piecesOnBoard.splice(index, 1);
+          }
+        renderPieces();
+
+    }
+}
+
+function verifyIfPieceIsPresent(row, col) {
+    let foundCells = null;
+    for (let i = 0; i < piecesOnBoard.length; i++) {
+        let pieceCells = piecesOnBoard[i].cells;
+        for(let j = 0; j < pieceCells.length; j++){
+            if (pieceCells[j][0] === row && pieceCells[j][1] === col) {
+                foundCells = piecesOnBoard[i]; 
+                return foundCells;
+            }
+        }
+    }
+    return false
+}
+
+function removeRowOrColEmpty(shape){
+    const filteredRows = shape.filter(row => row.some(cell => cell !== 0));
+    let colsToKeep = [];
+    for (let col = 0; col < filteredRows[0].length; col++) {
+        let hasNonZero = false;
+        for (let row = 0; row < filteredRows.length; row++) {
+            if (filteredRows[row][col] !== 0) {
+                hasNonZero = true;
+                break;
+            }
+        }
+        if (hasNonZero) {
+            colsToKeep.push(col);
+        }
+    }
+    const newShape = filteredRows.map(row => colsToKeep.map(col => row[col]));
+    return newShape;
+}
+
+function canAddPieceToCell(row, col) {
+    let shape = selectedPiece.shape;
+    shape = removeRowOrColEmpty(shape)
+    pieceShapeColLength = shape[0].length;
+    pieceShapeRowLength = shape.length;
+    if(pieceShapeRowLength + row > board.rows || pieceShapeColLength + col > board.cols) {
+        return false;
+    }
+    let i2 = 0;
+    for (let i = row; (i <= board.rows && i2<pieceShapeRowLength); i++) {
+        let j2 = 0;
+        for (let j = col; (j <=  board.cols && j2<pieceShapeColLength); j++) {
+            if (shape[i2][j2]) {
+                const cell = document.querySelector(`[data-id="${i}-${j}"]`);
+                if (cell) {
+                    if(cell.style.backgroundColor){
+                        return false;
+                    }
+                }
+            }
+            j2++;
+        }
+        i2++;
+    }
+    return true;
+}
+
+createBoard(5, 11);
+
+const pieces = [
     {
-        id: 1,
-        color: 'red',
-        // Formato de "T"
-        coords: [[0, 1], [1, 1], [1, 0], [2, 1]]
+        id: '1',
+        color: 'pink',
+        shape: [
+            [1, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0],
+            [1, 1, 1, 0, 0],
+            [1, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0]
+        ]
     },
     {
-        id: 1,
-        color: 'red',
-        // Formato de "T"
-        coords: [[1, 0], [1, 1], [0, 1], [1, 2]]
+        id: '2',
+        color: 'white',
+        shape: [
+            [0, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0]
+        ]
     },
     {
-        id: 2,
-        color: 'blue',
-        // Retangular de 4 peças
-        coords: [[0, 0], [0, 1], [0, 2], [0, 3]]
+        id: '3',
+        color: 'yellow',
+        shape: [
+            [1, 1, 0, 0, 0], 
+            [0, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0]
+        ]
     },
     {
-        id: 2,
-        color: 'blue',
-        // Retangular de 4 peças
-        coords: [[0, 0], [1, 0], [2, 0], [3, 0]]
-    },
-    {
-        id: 3,
-        color: 'green',
-        // Quadrada de 4 peças
-        coords: [[0, 0], [0, 1], [1, 0], [1, 1]]
-    },
-    {
-        id: 4,
+        id: '4',
         color: 'orange',
-        // Retangular de 5 peças
-        coords: [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]
+        shape: [
+            [0, 0, 1, 0, 0],
+            [1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0]
+        ]
     },
+    {
+        id: '5',
+        color: 'purple',
+        shape: [
+            [1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0]
+        ]
+    },
+    {
+        id: '6',
+        color: 'red',
+        shape: [
+            [1, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0], 
+            [1, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0]
+        ]
+    },
+    {
+        id: '7',
+        color: 'rgb(83, 141, 181)',
+        shape: [
+            [1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 0], 
+            [1, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0]
+        ]
+    },
+    {
+        id: '8',
+        color: 'gray',
+        shape: [
+            [0, 1, 0, 0, 0],
+            [1, 1, 1, 0, 0], 
+            [0, 1, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0]
+        ]
+    },
+    {
+        id: '9',
+        color: 'rgb(221, 59, 172)',
+        shape: [
+            [1, 1, 0, 0, 0],
+            [0, 1, 1, 0, 0], 
+            [0, 0, 1, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0]
+        ]
+    },
+    {
+        id: '10',
+        color: 'blue',
+        shape: [
+            [0, 0, 0, 1, 0],
+            [1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0] 
+        ]
+    },
+    {
+        id: '11',
+        color: 'rgb(143, 196, 121)',
+        shape: [
+            [1, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0] 
+        ]
+    },
+    {
+        id: '12',
+        color: 'green',
+        shape: [
+            [0, 1, 0, 0, 0],
+            [0, 1, 0, 0, 0], 
+            [1, 1, 0, 0, 0], 
+            [1, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0] 
+        ]
+    }
 ];
-const partsContainer = document.getElementById('parts');
 
-partsMap.forEach(part => {
-    const partDiv = createPartDiv(part);
-    partsContainer.appendChild(partDiv);
+function renderPieces() {
+    const piecesContainer = document.getElementById('pieces-container');
+    piecesContainer.innerHTML = '';
+    pieces.forEach(piece => {
+        if(!piecesOnBoard.some(p => p.pieceId === piece.id)){
+            const pieceDiv = document.createElement('div');
+            pieceDiv.className = 'piece';
+            pieceDiv.setAttribute('draggable', true);
+            pieceDiv.id = piece.id;
+
+            pieceDiv.addEventListener('click', function() {
+                displaySelectedPiece(piece);
+            });
+
+            renderPieceShape(piece, pieceDiv);
+            piecesContainer.appendChild(pieceDiv);
+        }
+    });
+}
+
+function displaySelectedPiece(piece) {
+    const selectedPieceContainer = document.getElementById('selected-piece-container');
+        selectedPieceContainer.innerHTML = '';
+        selectedPieceDiv = document.createElement('div');
+        selectedPieceDiv.className = 'piece';
+        selectedPieceDiv.id = piece.id;
+
+        renderPieceShape(piece, selectedPieceDiv);
+        selectedPieceContainer.appendChild(selectedPieceDiv);
+        selectedPiece = piece;
+}
+
+function renderPieceShape(piece, pieceDiv) {
+    pieceDiv.innerHTML = '';
+    const shape = piece.shape;
+    shape.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'piece-row';
+        row.forEach(cell => {
+            const cellDiv = document.createElement('div');
+            cellDiv.className = 'cell';
+            if (cell) {
+                cellDiv.style.backgroundColor = piece.color;
+            } else {
+                cellDiv.style.backgroundColor = 'transparent';
+            }
+            rowDiv.appendChild(cellDiv);
+        });
+        pieceDiv.appendChild(rowDiv);
+    });
+}
+
+function rotateSelectedPiece() {
+    if (selectedPiece) {
+        const rotatedShape = selectedPiece.shape[0].map((_, index) =>
+            selectedPiece.shape.map(row => row[index]).reverse()
+        );
+        selectedPiece.shape = rotatedShape;
+        displaySelectedPiece(selectedPiece);
+    }
+}
+
+document.getElementById('rotate-button').addEventListener('click', function() {
+    if (selectedPiece) {
+        rotateSelectedPiece(selectedPiece);
+        const piecesContainer = document.getElementById('pieces-container');
+        piecesContainer.innerHTML = '';
+        renderPieces();
+    }
+});
+document.getElementById('remove-button').addEventListener('click', function() {
+    if (selectedPiece) {
+        const selectedPieceContainer = document.getElementById('selected-piece-container');
+        selectedPieceContainer.innerHTML = '';
+        selectedPiece = null;
+    }
 });
 
-function createPartDiv(part) {
-    const partDiv = document.createElement('div');
-    partDiv.className = 'part';
-
-    renderCells(part, partDiv);
-    
-    return partDiv;
-}
-
-function renderCells(part, partDiv) {
-    partDiv.innerHTML = ''; 
-    const coords = part.coords;
-
-    const maxRow = getMaxRow(coords);
-    const maxCol = getMaxCol(coords);
-    
-    partDiv.style.gridTemplateRows = `repeat(${maxRow}, 60px)`;
-    partDiv.style.gridTemplateColumns = `repeat(${maxCol}, 60px)`;
-    
-    coords.forEach(coord => {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.style.backgroundColor = part.color;
-        cell.style.gridRowStart = coord[0] + 1;
-        cell.style.gridColumnStart = coord[1] + 1;
-        partDiv.appendChild(cell);
-    });
-
-    addRotateButton(part, partDiv);
-}
-
-function addRotateButton(part, partDiv) {
-    const rotateButton = document.createElement('button');
-    rotateButton.className = 'rotate-button';
-    rotateButton.innerText = 'Rotate';
-    partDiv.appendChild(rotateButton);
-
-    rotateButton.addEventListener('click', () => {
-        part.coords = rotateCoords(part.coords);
-        renderCells(part, partDiv);
-    });
-}
-
-function getMaxRow(coords) {
-    let maxRow = 0;
-    for (let i = 0; i < coords.length; i++) {
-        if (coords[i][0] > maxRow) {
-            maxRow = coords[i][0];
-        }
-    }
-    // soma 1 porque o grid do css começa em 1 e o array em 0
-    return maxRow + 1;
-}
-
-function getMaxCol(coords) {
-    let maxCol = 0;
-    for (let i = 0; i < coords.length; i++) {
-        if (coords[i][1] > maxCol) {
-            maxCol = coords[i][1];
-        }
-    }
-    // soma 1 porque o grid do css começa em 1 e o array em 0
-    return maxCol + 1;
-}
-
-function rotateCoords(coords) {
-    // inverte as colunas com as linhas
-    for (let i = 0; i < coords.length; i++) {
-        const row = coords[i][0];
-        const col = coords[i][1];
-        coords[i][0] = col;
-        coords[i][1] = row;
-    }
-
-    return coords;
-}
-// **** Fim Peças ****
+renderPieces(); 

@@ -1,28 +1,36 @@
 body {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
     margin: 0;
-    background: #282c34;
+    background: #a1b8b6;
 }
 
 .title {
-    color: #fff;
+    color: rgb(0, 0, 0);
+        font-family: cursive;
+        font-size: 60px;
+    }
+    
+    .game-container {
+        display: flex;
+        margin-top: 30px;
 }
 
 .board-container {
     display: grid;
-    grid-template-rows: repeat(5, 80px);
-    grid-template-columns: repeat(11, 80px);
-    gap: 5px;
+    grid-template-rows: repeat(5, 40px);
+        grid-template-columns: repeat(11, 40px);
+        gap: 3px;
     background: #000;
-    padding: 5px;
+    border-radius: 10px;
+        padding: 20px;
 }
 
 .cell {
-    background: #fff;
+    width: 40px;
+        height: 40px;
+        background: #a1b8b6;
     border-radius: 50%;
     cursor: pointer;
 }
@@ -31,20 +39,70 @@ body {
     background: #666;
 }
 
-.parts-container {
+.pieces-container {
     display: flex;
     overflow-x: auto;
-    padding: 5px;
-    background: #000;
+    padding: 1px;
+        width: 60%;
+        height: 25%;
+        border: 1px solid rgb(137, 180, 197);
+        border-radius: 10px;
+        background: rgb(16, 16, 16);
 }
 
-.part {
+.piece {
+    display: inline-block;
     display: grid;
-    gap: 2px;
-    border: 1px solid #fff;
+    gap: 3px;
+        border-radius: 10px;
+        margin: 5px;
+    }
+    
+    .piece-row {
+        display: flex;
+        gap: 3px;
 }
 
 .rotate-button {
+    background-color: #4CAF50;
+        color: white;
+        border-radius: 5px;
     cursor: pointer;
-    height: 20px;
+    height: 50px;
+        width: 50px;
+        margin-left: 3px;
+        margin-top: 100px;
+        transition: background-color 0.3s;
+    }
+    
+    .rotate-button:hover {
+        background-color: #337737;
+    }
+    
+    .remove-button {
+        background-color: red;
+        color: white;
+        border-radius: 5px;
+        height: 50px;
+        width: 50px;
+        font-size: 20px;
+        margin-left: 3px;
+        margin-top: 100px;
+        transition: background-color 0.3s;
+    }
+    
+    .remove-button:hover {
+        background-color: darkred;
+    }
+    
+    #selected-piece-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        background: #000;
+        margin-left: 20px;
 }
